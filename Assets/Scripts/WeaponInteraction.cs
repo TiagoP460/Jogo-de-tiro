@@ -171,13 +171,6 @@ if (GameManager.Instance != null)
 
             targetPoint = hit.point;
 
-            TargetHit target = hit.collider.GetComponentInParent<TargetHit>();
-
-            if (target != null)
-            {
-                target.TakeHit(currentWeapon.damage);
-            }
-
             break;
         }
 
