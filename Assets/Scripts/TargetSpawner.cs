@@ -6,17 +6,23 @@ public class TargetSpawner : MonoBehaviour
     [System.Serializable]
     public class SpawnPoint
     {
+        [Header("Spawn")]
         public Transform position;
         public GameObject targetPrefab;
         public int quantity = 1;
-        public Vector3 scale = Vector3.one;
-        public Vector3 rotation = Vector3.zero;
 
+        [Header("Ajustes extras")]
+        public Vector3 positionOffset = Vector3.zero;
+        public Vector3 rotationOffset = Vector3.zero;
+        public Vector3 scaleMultiplier = Vector3.one;
+
+        [Header("Movimento")]
         public bool moveHorizontal = false;
         public bool moveVertical = false;
         public float moveSpeed = 3f;
         public float moveRange = 2f;
 
+        [Header("Status")]
         public int health = 1;
         public int pointsValue = 1;
     }
@@ -36,6 +42,11 @@ public class TargetSpawner : MonoBehaviour
 
         foreach (SpawnPoint point in spawnPoints)
         {
+            if (point.position == null || point.targetPrefab == null)
+            {
+                continue;
+            }
+
             int currentCount = 0;
 
             foreach (GameObject target in spawnedTargets)
@@ -45,7 +56,7 @@ public class TargetSpawner : MonoBehaviour
                     continue;
                 }
 
-                Target targetScript = target.GetComponent<Target>();
+                Target targetScript = target.GetComponentInChildren<Target>();
 
                 if (targetScript != null && targetScript.spawnPoint == point)
                 {
@@ -74,22 +85,41 @@ public class TargetSpawner : MonoBehaviour
 
     void SpawnTarget(SpawnPoint point)
     {
-        if (point.position == null || point.targetPrefab == null)
+        if (point.position == null)
         {
+            Debug.LogWarning("SpawnPoint sem Position.");
             return;
         }
 
-        Quaternion finalRotation = point.targetPrefab.transform.rotation * Quaternion.Euler(point.rotation);
+        if (point.targetPrefab == null)
+        {
+            Debug.LogWarning("SpawnPoint sem Target Prefab.");
+            return;
+        }
 
-GameObject target = Instantiate(
-    point.targetPrefab,
-    point.position.position,
-    finalRotation
-);
+        Vector3 finalPosition = point.position.position + point.position.TransformDirection(point.positionOffset);
 
-        target.transform.localScale = point.scale;
+        Quaternion finalRotation =
+            point.targetPrefab.transform.rotation *
+            Quaternion.Euler(point.rotationOffset);
 
-        Target targetScript = target.GetComponent<Target>();
+        GameObject target = Instantiate(
+            point.targetPrefab,
+            finalPosition,
+            finalRotation
+        );
+
+        target.name = "Target_Spawnado";
+
+        Vector3 prefabScale = point.targetPrefab.transform.localScale;
+
+        target.transform.localScale = new Vector3(
+            prefabScale.x * point.scaleMultiplier.x,
+            prefabScale.y * point.scaleMultiplier.y,
+            prefabScale.z * point.scaleMultiplier.z
+        );
+
+        Target targetScript = target.GetComponentInChildren<Target>();
 
         if (targetScript != null)
         {
@@ -100,6 +130,10 @@ GameObject target = Instantiate(
             targetScript.moveRange = point.moveRange;
             targetScript.health = point.health;
             targetScript.pointsValue = point.pointsValue;
+        }
+        else
+        {
+            Debug.LogWarning("O prefab do alvo não tem o script Target.");
         }
 
         spawnedTargets.Add(target);
