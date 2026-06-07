@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7304371058513117064}
   - component: {fileID: 626569382729168482}
   - component: {fileID: 5645016894694407272}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: target1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -70,8 +70,9 @@ MonoBehaviour:
     position: {fileID: 0}
     targetPrefab: {fileID: 0}
     quantity: 1
-    scale: {x: 1, y: 1, z: 1}
-    rotation: {x: 0, y: 0, z: 0}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    scaleMultiplier: {x: 1, y: 1, z: 1}
     moveHorizontal: 0
     moveVertical: 0
     moveSpeed: 3
@@ -112,7 +113,7 @@ GameObject:
   - component: {fileID: 6157030312460029161}
   - component: {fileID: 6157030312460029166}
   - component: {fileID: 6157030312460029167}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Sphere (14)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -210,7 +211,7 @@ GameObject:
   - component: {fileID: 6157030312854355034}
   - component: {fileID: 6157030312854355035}
   - component: {fileID: 6157030312854355032}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Sphere (11)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -308,7 +309,7 @@ GameObject:
   - component: {fileID: 6157030312859159025}
   - component: {fileID: 6157030312859159030}
   - component: {fileID: 6157030312859159031}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Sphere (15)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -406,7 +407,7 @@ GameObject:
   - component: {fileID: 6157030313005507354}
   - component: {fileID: 6157030313005507355}
   - component: {fileID: 6157030313005507352}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Sphere (13)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -504,7 +505,7 @@ GameObject:
   - component: {fileID: 6157030313444248312}
   - component: {fileID: 6157030313444248313}
   - component: {fileID: 6157030313444248318}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Sphere (12)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -602,7 +603,7 @@ GameObject:
   - component: {fileID: 4981015937680503324}
   - component: {fileID: 841794689408700131}
   - component: {fileID: 52047114275512349}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -700,7 +701,7 @@ GameObject:
   - component: {fileID: 8892101472861552974}
   - component: {fileID: 840011546299449819}
   - component: {fileID: 6548126247288062291}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -10,15 +10,25 @@ public class WeaponInteraction : MonoBehaviour
     [Header("Bala")]
     public GameObject bulletPrefab;
     public Transform firePoint;
-    public float bulletSpeed = 40f;
+    public float bulletSpeed = 50f;
     public Vector3 bulletRotationOffset = new Vector3(90f, 0f, 0f);
 
     [Header("Interação")]
     public float pickupRange = 3f;
     public TMP_Text interactionText;
 
+    [Header("Mira com botão direito")]
+    public float normalFOV = 60f;
+    public float aimFOV = 40f;
+    public float aimSpeed = 10f;
+
+    public Vector3 normalWeaponHolderPosition;
+    public Vector3 aimWeaponHolderPosition = new Vector3(0f, -0.12f, 0.45f);
+
     private PickupableWeapon currentWeapon;
     private float nextShotTime;
+
+    private bool isAiming;
 
     void Start()
     {
@@ -31,11 +41,22 @@ public class WeaponInteraction : MonoBehaviour
         {
             interactionText.text = "";
         }
+
+        if (playerCamera != null)
+        {
+            normalFOV = playerCamera.fieldOfView;
+        }
+
+        if (weaponHolder != null)
+        {
+            normalWeaponHolderPosition = weaponHolder.localPosition;
+        }
     }
 
     void Update()
     {
         UpdateInteractionText();
+        HandleAim();
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -50,6 +71,45 @@ public class WeaponInteraction : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.G))
         {
             DropWeapon();
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            if (GameManager.Instance != null && !GameManager.Instance.IsGameOver)
+            {
+                GameManager.Instance.StartReload();
+            }
+        }
+    }
+
+    void HandleAim()
+    {
+        if (currentWeapon == null && weaponHolder != null)
+        {
+            currentWeapon = weaponHolder.GetComponentInChildren<PickupableWeapon>();
+        }
+
+        isAiming = currentWeapon != null && Input.GetMouseButton(1);
+
+        if (playerCamera != null)
+        {
+            float targetFOV = isAiming ? aimFOV : normalFOV;
+            playerCamera.fieldOfView = Mathf.Lerp(
+                playerCamera.fieldOfView,
+                targetFOV,
+                aimSpeed * Time.deltaTime
+            );
+        }
+
+        if (weaponHolder != null)
+        {
+            Vector3 targetPosition = isAiming ? aimWeaponHolderPosition : normalWeaponHolderPosition;
+
+            weaponHolder.localPosition = Vector3.Lerp(
+                weaponHolder.localPosition,
+                targetPosition,
+                aimSpeed * Time.deltaTime
+            );
         }
     }
 
@@ -124,24 +184,25 @@ public class WeaponInteraction : MonoBehaviour
             return;
         }
 
-       if (Time.time < nextShotTime)
-{
-    return;
-}
+        if (Time.time < nextShotTime)
+        {
+            return;
+        }
 
-if (GameManager.Instance != null)
-{
-    if (GameManager.Instance.IsGameOver)
-    {
-        return;
-    }
+        if (GameManager.Instance != null)
+        {
+            if (GameManager.Instance.IsGameOver)
+            {
+                return;
+            }
 
-    if (!GameManager.Instance.TryUseAmmo())
-    {
-        Debug.Log("Sem munição ou jogo finalizado.");
-        return;
-    }
-}
+            if (!GameManager.Instance.TryUseAmmo())
+            {
+                Debug.Log("Sem munição ou recarregando.");
+                return;
+            }
+        }
+
         nextShotTime = Time.time + currentWeapon.fireCooldown;
 
         Ray cameraRay = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
@@ -170,7 +231,6 @@ if (GameManager.Instance != null)
             }
 
             targetPoint = hit.point;
-
             break;
         }
 
@@ -217,6 +277,16 @@ if (GameManager.Instance != null)
 
         currentWeapon.Drop(playerCamera.transform);
         currentWeapon = null;
+
+        if (weaponHolder != null)
+        {
+            weaponHolder.localPosition = normalWeaponHolderPosition;
+        }
+
+        if (playerCamera != null)
+        {
+            playerCamera.fieldOfView = normalFOV;
+        }
 
         Debug.Log("Arma solta.");
     }

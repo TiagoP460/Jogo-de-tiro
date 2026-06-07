@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,9 +11,11 @@ public class GameManager : MonoBehaviour
     public TMP_Text scoreText;
     public TMP_Text ammoText;
     public TMP_Text gameOverText;
+    public GameObject restartButton;
 
     [Header("Configurações")]
     public int maxAmmo = 30;
+    public float reloadTime = 1.5f;
     public float startTime = 60f;
     public int scoreToWin = 4;
 
@@ -20,10 +23,16 @@ public class GameManager : MonoBehaviour
     private int currentAmmo;
     private float currentTime;
     private bool gameOver = false;
+    private bool isReloading = false;
 
     public bool IsGameOver
     {
         get { return gameOver; }
+    }
+
+    public bool IsReloading
+    {
+        get { return isReloading; }
     }
 
     void Awake()
@@ -42,6 +51,11 @@ public class GameManager : MonoBehaviour
             gameOverText.text = "";
         }
 
+        if (restartButton != null)
+        {
+            restartButton.SetActive(false);
+        }
+
         Time.timeScale = 1f;
         UpdateUI();
     }
@@ -50,7 +64,7 @@ public class GameManager : MonoBehaviour
     {
         if (gameOver)
         {
-            if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown(KeyCode.F))
             {
                 RestartGame();
             }
@@ -71,7 +85,7 @@ public class GameManager : MonoBehaviour
 
     public bool CanShoot()
     {
-        return !gameOver && currentAmmo > 0;
+        return !gameOver && !isReloading && currentAmmo > 0;
     }
 
     public bool TryUseAmmo()
@@ -82,16 +96,42 @@ public class GameManager : MonoBehaviour
         }
 
         currentAmmo--;
+        UpdateUI();
 
-        if (currentAmmo <= 0)
+        return true;
+    }
+
+    public void StartReload()
+    {
+        if (gameOver)
         {
-            currentAmmo = 0;
-            UpdateUI();
-            EndGame("GAME OVER");
+            return;
         }
 
+        if (isReloading)
+        {
+            return;
+        }
+
+        if (currentAmmo >= maxAmmo)
+        {
+            return;
+        }
+
+        StartCoroutine(ReloadCoroutine());
+    }
+
+    IEnumerator ReloadCoroutine()
+    {
+        isReloading = true;
         UpdateUI();
-        return true;
+
+        yield return new WaitForSeconds(reloadTime);
+
+        currentAmmo = maxAmmo;
+        isReloading = false;
+
+        UpdateUI();
     }
 
     public void AddScore(int amount)
@@ -123,7 +163,23 @@ public class GameManager : MonoBehaviour
 
         if (ammoText != null)
         {
-            ammoText.text = "Ammo: " + currentAmmo + "/" + maxAmmo + "\nTime: " + Mathf.CeilToInt(currentTime) + "s";
+            string ammoInfo;
+
+            if (isReloading)
+            {
+                ammoInfo = "Ammo: Recarregando...";
+            }
+            else
+            {
+                ammoInfo = "Ammo: " + currentAmmo + "/" + maxAmmo;
+
+                if (currentAmmo <= 0)
+                {
+                    ammoInfo += "\nPressione R para recarregar";
+                }
+            }
+
+            ammoText.text = ammoInfo + "\nTime: " + Mathf.CeilToInt(currentTime) + "s";
         }
     }
 
@@ -139,8 +195,13 @@ public class GameManager : MonoBehaviour
         if (gameOverText != null)
         {
             gameOverText.gameObject.SetActive(true);
-            gameOverText.text = message + "\n<size=32>Pressione R para jogar novamente</size>";
+            gameOverText.text = message + "\n<size=32>Pressione F ou clique no botão para jogar novamente</size>";
             gameOverText.alignment = TextAlignmentOptions.Center;
+        }
+
+        if (restartButton != null)
+        {
+            restartButton.SetActive(true);
         }
 
         Cursor.lockState = CursorLockMode.None;
@@ -149,7 +210,7 @@ public class GameManager : MonoBehaviour
         Debug.Log(message);
     }
 
-    void RestartGame()
+    public void RestartGame()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
